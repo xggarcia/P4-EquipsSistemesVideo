@@ -15,3 +15,5 @@ COPY . .
 EXPOSE 9000
 
 CMD ["uvicorn", "ffmpeg_service:app", "--host", "0.0.0.0", "--port", "9000"]
+
+
