@@ -1,19 +1,20 @@
-FROM python:3.11-slim
+# FFmpeg Docker Container
+FROM ubuntu:22.04
 
-WORKDIR /app
+# Avoid interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
 
-#install FFmpeg
+# Update package list and install FFmpeg
 RUN apt-get update && \
     apt-get install -y ffmpeg && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Create a working directory for media files
+WORKDIR /media
 
-COPY . .
+# Set FFmpeg as the default command
+ENTRYPOINT ["ffmpeg"]
 
-EXPOSE 9000
-
-CMD ["uvicorn", "ffmpeg_service:app", "--host", "0.0.0.0", "--port", "9000"]
-
-
+# Default command shows FFmpeg version
+CMD ["-version"]
