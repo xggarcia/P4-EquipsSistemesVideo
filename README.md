@@ -1,88 +1,56 @@
-# Video Packaging with Docker & FFmpeg
+# P4 
 
-This repository demonstrates video packaging for adaptive streaming protocols (HLS and MPEG-DASH) using FFmpeg running inside a Docker container.
+**Students:** Irene, Jofre, Guillem 
+**Course:** Video Systems Equipment  
 
-## What is This Project?
+---
+1. **Task 2:** Packaged a video for adaptive streaming in two formats:
+   - **HLS** (HTTP Live Streaming) with H.264 video
+   - **MPEG-DASH** with VP9 video
 
-This project shows how to:
-1. Use **Docker** to containerize FFmpeg
-2. Package videos for **HLS (HTTP Live Streaming)**
-3. Package videos for **MPEG-DASH (Dynamic Adaptive Streaming over HTTP)**
-4. Understand the differences between streaming formats and codecs
+2. **Task 3:** Applied DRM encryption using Bento4 to protect video content (like real streaming platforms do)
 
-## Why Docker?
+3. **Task 4:** Investigated a real VOD platform to understand what technologies they use
 
-Using Docker provides:
-- **Portability**: Works on any system with Docker installed
-- **No local installation**: FFmpeg runs inside the container
-- **Consistency**: Same environment everywhere
-- **Isolation**: Doesn't affect your system
+4. **Task 5** Following the Github tutorial
+
+---
 
 ## Repository Contents
 
-```
-├── Dockerfile         # Defines the FFmpeg container
-├── README.md          # General repository information (this file)
-└── TASKS.md          # Task instructions and solutions
-```
+### Docker Files
+- **`Dockerfile`** - FFmpeg container for video packaging (Tasks 2)
+- **`Dockerfile.bento4`** - Bento4 container for DRM encryption (Task 3)
 
-## Prerequisites
+### Documentation
+- **`TASKS.md`** - Complete documentation of all tasks with commands and explanations
+- **`Report_Task4.md`** - VOD platform investigation report
+- **`TUTORIAL_Task5.md`** - Report for the last task (github tutorial)
 
-- Docker Desktop installed and running
-- PowerShell (Windows) or Bash (Linux/Mac)
-- Basic understanding of video formats and containers
+### Source & Processed Files
+- **`input.mp4`** - Source video file (1 minute)
+- **`input_fragmented.mp4`** - Fragmented MP4 for DASH packaging
+- **`input_encrypted.mp4`** - DRM-encrypted video file
 
-## Quick Start
+### Output Results
+- **`results task 2/`** - HLS and MPEG-DASH packaged outputs
+  - HLS: `.m3u8` playlist + `.ts` segments
+  - DASH: `.mpd` manifest + `.webm` segments
+  
+- **`results task 3/`** - DRM-protected DASH packages
+  - Encrypted video and audio segments
+  - Manifest with ContentProtection elements
 
-### 1. Build the FFmpeg Container
+---
+
+## How to Run
+
+### Build Docker Containers
 ```powershell
+# FFmpeg container
 docker build -t ffmpeg-container .
+
+# Bento4 container  
+docker build -f Dockerfile.bento4 -t bento4-container .
 ```
-
-This creates a Docker image with FFmpeg and all necessary codecs (H.264, VP9, AAC).
-
-### 2. Package the Video
-
-See [TASKS.md](TASKS.md) for detailed instructions on packaging videos for HLS and MPEG-DASH.
-
-## Adaptive Streaming Concepts
-
-### HLS (HTTP Live Streaming)
-- Developed by Apple
-- Uses MPEG-TS container (.ts files)
-- Commonly uses H.264 video and AAC audio
-- Playlist file (.m3u8) lists available segments
-- Wide support on iOS/macOS devices
-
-### MPEG-DASH (Dynamic Adaptive Streaming over HTTP)
-- Industry standard (ISO/IEC 23009-1)
-- Uses WebM or MP4 containers
-- Supports various codecs (VP9, H.264, etc.)
-- Manifest file (.mpd) describes available streams
-- Platform-agnostic, works everywhere
-
-### Key Differences
-
-| Aspect | HLS | MPEG-DASH |
-|--------|-----|-----------|
-| **Developer** | Apple | ISO standard |
-| **Container** | MPEG-TS (.ts) | WebM/MP4 |
-| **Manifest** | .m3u8 (text) | .mpd (XML) |
-| **Audio/Video** | Multiplexed (combined) | Can be separate |
-| **Best for** | Apple ecosystem | Universal |
-
-## How It Works
-
-1. **Segmentation**: Long video is split into small chunks (e.g., 10 seconds each)
-2. **Manifest/Playlist**: A file lists all available segments
-3. **Adaptive Playback**: Player downloads segments on-demand based on network speed
-4. **HTTP-Based**: Works with regular web servers, no special streaming server needed
-
-## Learning Objectives
-
-After completing this project, you should understand:
-- How Docker containerization works
-- How FFmpeg packages videos for streaming
-- Differences between HLS and MPEG-DASH formats
-- Why adaptive streaming uses segmented files
-- The role of codecs (H.264, VP9, AAC) in video delivery
+---
