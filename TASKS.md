@@ -103,8 +103,6 @@ source_video_hls_segment_004.ts  # Segment 5 (40-50 seconds)
 source_video_hls_segment_005.ts  # Segment 6 (50-60 seconds)
 ```
 
-**Total: 7 files** (1 playlist + 6 segments)
-
 ### MPEG-DASH Output
 
 ```
@@ -124,93 +122,19 @@ source_video_dash_chunk_1_5.webm  # Audio segment 5
 source_video_dash_chunk_1_6.webm  # Audio segment 6
 ```
 
-**Total: 14 files** (1 manifest + 2 init segments + 5 video chunks + 6 audio chunks)
-
 ---
-
-## Why Different Output Structures?
 
 ### HLS: Single Stream (Audio + Video Combined)
 
-**Why only one `.ts` file per segment?**
-
-In HLS, each `.ts` file is a **multiplexed** container that contains **both audio and video** streams together. This is because:
-
-1. **MPEG-TS format**: The Transport Stream container was designed for broadcasting and can carry multiple streams in a single file
-2. **Simplicity**: Player downloads one file per time segment and gets everything it needs
-3. **Backward compatibility**: Traditional broadcast systems used this approach
-4. **File structure**:
-   ```
-   segment_000.ts → [Video Stream + Audio Stream]
-   segment_001.ts → [Video Stream + Audio Stream]
-   ```
+In HLS, each `.ts` file is a **multiplexed** container that contains **both audio and video** streams together. 
 
 ### MPEG-DASH: Separate Streams (Audio and Video Split)
 
-**Why separate `.webm` files for audio and video?**
+In MPEG-DASH, audio and video are stored in **separate files** (demultiplexed). 
 
-In MPEG-DASH, audio and video are stored in **separate files** (demultiplexed). This provides:
-
-1. **Adaptive flexibility**: Player can switch video quality without re-downloading audio
-2. **Bandwidth optimization**: Can choose different bitrates for video and audio independently
-3. **Multi-language support**: One video stream can work with multiple audio tracks (different languages)
-4. **Storage efficiency**: Share one audio track across multiple video quality levels
-5. **File structure**:
-   ```
-   Video Stream:
-   ├── init_0.webm (codec info)
-   ├── chunk_0_1.webm (video only)
-   ├── chunk_0_2.webm (video only)
-   └── ...
-   
-   Audio Stream:
-   ├── init_1.webm (codec info)
-   ├── chunk_1_1.webm (audio only)
-   ├── chunk_1_2.webm (audio only)
-   └── ...
-   ```
-
-### Initialization Segments in DASH
-
-DASH has **init segments** (`init_0.webm`, `init_1.webm`) that contain:
-- Codec configuration
-- Container metadata
-- Information needed to decode the media chunks
-
-These are downloaded once at the start, then all subsequent chunks reference them. HLS embeds this information in each `.ts` file.
+It has some advantages such as: the player can switch video quality without re-downloading audio, it can choose different bitrates for video and audio independently, one video stream can work with multiple audio tracks...
 
 ---
-
-## Comparison Summary
-
-| Aspect | HLS | MPEG-DASH |
-|--------|-----|-----------|
-| **Files per segment** | 1 (multiplexed) | 2+ (demultiplexed) |
-| **Audio + Video** | Combined in .ts | Separate .webm files |
-| **Initialization** | Embedded in each file | Separate init segments |
-| **Total files** | Fewer (7) | More (14) |
-| **Quality switching** | Must download both A+V | Can switch video independently |
-| **Flexibility** | Lower | Higher |
-| **Complexity** | Simpler | More complex |
-
----
-
-## Verification Commands
-
-### View HLS playlist:
-```powershell
-Get-Content source_video_hls.m3u8
-```
-
-### View DASH manifest:
-```powershell
-Get-Content source_video_dash.mpd
-```
-
-### List all output files:
-```powershell
-Get-ChildItem source_video_* | Format-Table Name, Length
-```
 
 ### Play the packaged video (using VLC):
 ```powershell
@@ -220,3 +144,55 @@ vlc source_video_hls.m3u8
 # DASH
 vlc source_video_dash.mpd
 ```
+
+---
+
+# Task 3: DRM Protection with Bento4
+
+## Task Description
+
+Apply DRM (Digital Rights Management) to a video using **Bento4** tools inside a Docker container.
+
+---
+
+### Build the Docker image:
+
+```powershell
+docker build -f Dockerfile.bento4 -t bento4-container .
+```
+
+---
+
+## Step 1: Fragment the MP4 File
+
+Before packaging or encrypting, the MP4 file must be **fragmented** (to prepare for streaming). It is required for DASH packaging. 
+
+```powershell
+docker run --rm -v ${PWD}:/media bento4-container mp4fragment input.mp4 input_fragmented.mp4
+```
+
+---
+
+## Step 2: Create DRM DASH Package
+
+Use `mp4dash` with encryption to create an encrypted MPEG-DASH package:
+
+```powershell
+docker run --rm -v ${PWD}:/media bento4-container `
+  mp4dash `
+  --exec-dir=/opt/Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin `
+  input_fragmented.mp4 `
+  --encryption-key=00112233445566778899aabbccddeeff:000102030405060708090a0b0c0d0e0f `
+  -o "results task 3/dash_drm"
+```
+---
+
+### Key ID (KID)
+- Identifier that tells the player which key to use
+- chosen key: `00112233445566778899aabbccddeeff`
+
+### Content Key (KEY)
+- The actual encryption key used to encrypt/decrypt the content
+- chosen value: `000102030405060708090a0b0c0d0e0f`
+
+---

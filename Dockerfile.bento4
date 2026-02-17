@@ -1,0 +1,23 @@
+# Bento4 Docker Container
+FROM ubuntu:22.04
+
+# Avoid interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies and Bento4
+RUN apt-get update && \
+    apt-get install -y wget unzip python3 && \
+    wget https://www.bok.net/Bento4/binaries/Bento4-SDK-1-6-0-641.x86_64-unknown-linux.zip && \
+    unzip Bento4-SDK-1-6-0-641.x86_64-unknown-linux.zip -d /opt/ && \
+    rm Bento4-SDK-1-6-0-641.x86_64-unknown-linux.zip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add Bento4 tools to PATH
+ENV PATH="/opt/Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin:${PATH}"
+
+# Create working directory
+WORKDIR /media
+
+# Default command shows available tools
+CMD ["mp4info", "--version"]

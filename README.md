@@ -41,17 +41,7 @@ docker build -t ffmpeg-container .
 
 This creates a Docker image with FFmpeg and all necessary codecs (H.264, VP9, AAC).
 
-### 2. Create a Test Video
-```powershell
-docker run --rm -v ${PWD}:/media ffmpeg-container `
-  -f lavfi -i testsrc=duration=60:size=1280x720:rate=30 `
-  -f lavfi -i sine=frequency=1000:duration=60 `
-  -c:v libx264 -c:a aac source_video.mp4
-```
-
-This generates a 1-minute test video (720p, 30fps) with a test pattern and audio tone.
-
-### 3. Package the Video
+### 2. Package the Video
 
 See [TASKS.md](TASKS.md) for detailed instructions on packaging videos for HLS and MPEG-DASH.
 
